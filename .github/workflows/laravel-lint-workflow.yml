@@ -48,7 +48,6 @@ jobs:
       run: |
         PINT_OUTPUT=$(vendor/bin/pint --test -v 2>&1) || echo "PINT_FAILED=true" >> $GITHUB_ENV
         echo "$PINT_OUTPUT" > pint_output.txt
-      working-directory: ./src
         
     - name: Comment PR with Pint issues
       if: env.PINT_FAILED == 'true'
@@ -82,5 +81,4 @@ jobs:
             repo: context.repo.repo,
             body: formattedComment
           });
-      working-directory: ./src
 
