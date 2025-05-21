@@ -57,12 +57,12 @@ jobs:
             exit 1
           fi
         working-directory: ./src
-      - name: Set Pint result as output
+      - name: Set Pint result as env
         id: pint-result
         run: |
-          echo "result<<EOF" >> $GITHUB_OUTPUT
-          cat pint-result.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "PINT_RESULT<<EOF" >> $GITHUB_ENV
+          cat pint-result.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         working-directory: ./src
       - name: Post Pint result as PR comment
         if: failure() && github.event_name == 'pull_request'
@@ -73,7 +73,7 @@ jobs:
           body: |
             ## Pint Lint結果
             ```
-            ${{ steps.pint-result.outputs.result }}
+            ${{ env.PINT_RESULT }}
             ```
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse app
