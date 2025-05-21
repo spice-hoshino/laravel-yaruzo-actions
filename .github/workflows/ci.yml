@@ -44,8 +44,26 @@ jobs:
         run: php artisan migrate --force
         working-directory: ./src
       - name: Run Pint (Linter)
-        run: ./vendor/bin/pint
+        run: ./vendor/bin/pint --test > pint-result.txt
         working-directory: ./src
+        continue-on-error: true
+      - name: Check Pint result and fail if needed
+        run: |
+          if grep -q "FAIL" pint-result.txt; then
+            exit 1
+          fi
+        working-directory: ./src
+      - name: Post Pint result as PR comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Pint Lint結果
+            ```
+            $(cat src/pint-result.txt)
+            ```
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse app
         working-directory: ./src
