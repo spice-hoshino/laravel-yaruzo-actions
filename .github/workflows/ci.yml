@@ -57,6 +57,13 @@ jobs:
             exit 1
           fi
         working-directory: ./src
+      - name: Set Pint result as output
+        id: pint-result
+        run: |
+          echo "result<<EOF" >> $GITHUB_OUTPUT
+          cat pint-result.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        working-directory: ./src
       - name: Post Pint result as PR comment
         if: failure() && github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v4
@@ -66,7 +73,7 @@ jobs:
           body: |
             ## Pint Lint結果
             ```
-            $(cat src/pint-result.txt)
+            ${{ steps.pint-result.outputs.result }}
             ```
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse app
