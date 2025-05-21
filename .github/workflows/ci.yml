@@ -32,7 +32,8 @@ jobs:
           extensions: mbstring, pdo, pdo_mysql, intl, fileinfo
           coverage: none
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
+        working-directory: ./src
       - name: Copy .env
         run: cp .env.example .env
       - name: Generate key
