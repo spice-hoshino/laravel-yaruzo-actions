@@ -47,7 +47,7 @@ jobs:
         run: ./vendor/bin/pint
         working-directory: ./src
       - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyse
+        run: ./vendor/bin/phpstan analyse app
         working-directory: ./src
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
