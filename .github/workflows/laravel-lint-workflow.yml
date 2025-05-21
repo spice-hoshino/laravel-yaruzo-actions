@@ -1,4 +1,4 @@
-name: Laravel Lint with Pint
+name: Laravel Lint with Pint (検知時コメントに残す)
 
 on:
   pull_request:
