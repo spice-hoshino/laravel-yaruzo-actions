@@ -36,16 +36,22 @@ jobs:
         working-directory: ./src
       - name: Copy .env
         run: cp .env.example .env
+        working-directory: ./src
       - name: Generate key
         run: php artisan key:generate
+        working-directory: ./src
       - name: Run migrations
         run: php artisan migrate --force
+        working-directory: ./src
       - name: Run Pint (Linter)
         run: ./vendor/bin/pint
+        working-directory: ./src
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse
+        working-directory: ./src
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
+        working-directory: ./src
       # VPNが必須の場合は、ここでVPN接続用のアクションやコマンドを追加してください
       # 例: - name: Connect to VPN
       #         run: sudo openvpn --config ${{ secrets.VPN_CONFIG }} 
