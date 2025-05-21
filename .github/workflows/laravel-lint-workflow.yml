@@ -57,7 +57,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const fs = require('fs');
-          const pintOutput = fs.readFileSync('pint_output.txt', 'utf8');
+          const pintOutput = fs.readFileSync('src/pint_output.txt', 'utf8');
           
           const formatComment = (output) => {
             // タイトル部分の作成
@@ -82,4 +82,3 @@ jobs:
             repo: context.repo.repo,
             body: formattedComment
           });
-      working-directory: ./src
