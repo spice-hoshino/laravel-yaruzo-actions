@@ -82,4 +82,4 @@ jobs:
             repo: context.repo.repo,
             body: formattedComment
           });
-
+      working-directory: ./src
