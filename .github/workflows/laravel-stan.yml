@@ -1,0 +1,78 @@
+name: Laravel Stan with PHPStan
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  laravel-stan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql
+        coverage: none
+        
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+    - name: Cache composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+      
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+      working-directory: ./src
+      
+    - name: Run PHPStan
+      id: phpstan
+      run: |
+        PHPSTAN_OUTPUT=$(vendor/bin/phpstan analyse app --error-format=raw 2>&1) || echo "PHPSTAN_FAILED=true" >> $GITHUB_ENV
+        echo "$PHPSTAN_OUTPUT" > phpstan_output.txt
+      working-directory: ./src
+
+    - name: Comment PR with PHPStan issues
+      if: env.PHPSTAN_FAILED == 'true'
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const stanOutput = fs.readFileSync('src/phpstan_output.txt', 'utf8');
+          const formatComment = (output) => {
+            // タイトル部分の作成
+            let comment = '## PHPStan で問題が検出されました ⚠️\n\n';
+            // コードブロックとしてPintの出力を追加
+            comment += '```\n' + output + '\n```\n\n';
+            return comment;
+          };
+          const formattedComment = formatComment(stanOutput);
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: formattedComment
+          });
+
+    - name: Fail if PHPStan issues found
+      if: env.PHPSTAN_FAILED == 'true'
+      run: exit 1
