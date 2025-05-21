@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: laravel
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_mysql, intl, fileinfo
+          coverage: none
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Copy .env
+        run: cp .env.example .env
+      - name: Generate key
+        run: php artisan key:generate
+      - name: Run migrations
+        run: php artisan migrate --force
+      - name: Run Pint (Linter)
+        run: ./vendor/bin/pint
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse
+      - name: Run PHPUnit
+        run: ./vendor/bin/phpunit
+      # VPNが必須の場合は、ここでVPN接続用のアクションやコマンドを追加してください
+      # 例: - name: Connect to VPN
+      #         run: sudo openvpn --config ${{ secrets.VPN_CONFIG }} 
