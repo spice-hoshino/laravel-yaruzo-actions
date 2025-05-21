@@ -47,25 +47,38 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --force
         working-directory: ./src
+
+      # Pint Linter
       - name: Run Pint (Linter)
-        run: ./vendor/bin/pint --test > pint-result.txt
-        working-directory: ./src
-        continue-on-error: true
-      - name: Check Pint result and fail if needed
+        id: pint
         run: |
+          ./vendor/bin/pint --test > pint-result.txt
           if grep -q "FAIL" pint-result.txt; then
-            exit 1
+            echo "pint_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "pint_failed=false" >> $GITHUB_OUTPUT
           fi
         working-directory: ./src
+        continue-on-error: true
+
+      # Pint Linterの結果をログに表示
+      - name: Show Pint result in log
+        run: cat pint-result.txt
+        working-directory: ./src
+
+      # Pint Linterの結果を環境変数に設定
       - name: Set Pint result as env
         id: pint-result
         run: |
-          echo "PINT_RESULT<<EOF" >> $GITHUB_ENV
-          cat pint-result.txt >> $GITHUB_ENV
+          RESULT=$(cat pint-result.txt)
+          echo "pint_result<<EOF" >> $GITHUB_ENV
+          echo "$RESULT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         working-directory: ./src
+
+      # Pint Linterの結果をPRコメントに表示
       - name: Post Pint result as PR comment
-        if: failure() && github.event_name == 'pull_request'
+        if: steps.pint.outputs.pint_failed == 'true' && github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,11 +86,15 @@ jobs:
           body: |
             ## Pint Lint結果
             ```
-            ${{ env.PINT_RESULT }}
+            ${{ env.pint_result }}
             ```
+
+      # PHPStan
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse app
         working-directory: ./src
+
+      # PHPUnit
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit
         working-directory: ./src
