@@ -16,4 +16,14 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    /**
+     * この意図的に失敗するテストはGitHub Actionの動作確認用です
+     * テスト後は削除またはコメントアウトしてください
+     */
+    public function test_intentionally_failing_test_for_github_action(): void
+    {
+        // わざと失敗させるアサーション
+        $this->assertTrue(false, 'このテストは意図的に失敗させています - GitHub Action動作確認用');
+    }
 }
