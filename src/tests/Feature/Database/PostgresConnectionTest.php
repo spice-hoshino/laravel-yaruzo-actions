@@ -30,7 +30,7 @@ class PostgresConnectionTest extends TestCase
     }
 
     #[Test]
-    public function Postgres特有の集約関数を利用できること()
+    public function postgres特有の集約関数を利用できること()
     {
         DB::statement('CREATE TABLE IF NOT EXISTS items (
             id SERIAL PRIMARY KEY,
