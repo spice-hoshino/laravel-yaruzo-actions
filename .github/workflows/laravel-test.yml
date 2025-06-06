@@ -37,9 +37,9 @@ jobs:
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
-      DB_DATABASE: ci_test
-      DB_USERNAME: ci_test
-      DB_PASSWORD: ci_test_secret
+      DB_DATABASE: ${{secrets.DB_DATABASE}}
+      DB_USERNAME: ${{secrets.DB_USERNAME}}
+      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
       APP_ENV: testing
       CACHE_DRIVER: array
       SESSION_DRIVER: array
